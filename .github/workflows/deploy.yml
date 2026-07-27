@@ -3,17 +3,21 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main  # 当 main 分支有推送时触发工作流
+      - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v4
+      - uses: actions/upload-pages-artifact@v3
         with:
-          branch: gh-pages # 部署到的目标分支
-          folder: .     # 需要部署的文件夹，通常是 dist 或 build
+          path: '.'
+      - uses: actions/deploy-pages@v4
