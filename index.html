@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>班级座位编排系统</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['"PingFang SC"','"Microsoft YaHei"','sans-serif'] }
+    }
+  }
+}
+</script>
+<style>
+  :root {
+    --bg: #0b0f19;
+    --card: #111827;
+    --card2: #1a1f2e;
+    --border: #1e293b;
+    --accent: #6366f1;
+    --accent2: #818cf8;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --green: #10b981;
+    --red: #ef4444;
+    --orange: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    font-family: 'PingFang SC','Microsoft YaHei',sans-serif;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .card2 {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-weight: 600;
+    transition: all .2s;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent2); }
+  .input-field {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 10px 14px;
+    outline: none;
+    width: 100%;
+    transition: border-color .2s;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .step-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+  .step-dot.active { background: var(--accent); color: #fff; }
+  .step-dot.done { background: var(--green); color: #fff; }
+  .step-dot.todo { background: var(--card2); color: var(--text2); border: 2px solid var(--border); }
+  .step-line { flex: 1; height: 2px; background: var(--border); margin: 0 8px; }
+  .step-line.done { background: var(--green); }
+  /* 影院式座位 */
+  .cinema-row {
+    display: flex; align-items: center; gap: 3px;
+    margin-bottom: 3px;
+  }
+  .row-label {
+    font-size: 11px; color: var(--text2);
+    min-width: 36px; text-align: center; flex-shrink: 0;
+  }
+  .row-label.right { margin-left: 3px; }
+  .row-seats {
+    display: flex; align-items: center; gap: 3px;
+  }
+  .desk-group {
+    display: flex; gap: 3px;
+    background: rgba(30,41,59,.6);
+    border-radius: 8px; padding: 3px 2px;
+    border: 1px solid rgba(51,65,85,.4);
+  }
+  .aisle { width: 3px; flex-shrink: 0; }
+  .cinema-seat {
+    width: 56px; height: 56px;
+    border-radius: 6px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    border: 2px solid transparent;
+    user-select: none;
+    position: relative;
+  }
+  .empty-seat {
+    background: rgba(30,41,59,.4);
+    border-color: rgba(51,65,85,.3);
+    color: var(--text2);
+  }
+  .empty-seat:hover { border-color: var(--accent); background: rgba(99,102,241,.1); }
+  .filled-seat {
+    background: #1e293b;
+    border-color: #475569;
+    color: #e2e8f0;
+  }
+  .filled-seat:hover { transform: scale(1.06); border-color: var(--accent2); }
+  .male-seat { border-left: 3px solid #3b82f6; }
+  .female-seat { border-left: 3px solid #ec4899; }
+  .selected-seat {
+    border-color: var(--accent) !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.35);
+    transform: scale(1.1);
+    z-index: 10;
+  }
+  .seat-num {
+    font-size: 9px; color: var(--text2);
+    position: absolute; top: 2px; left: 5px;
+  }
+  .seat-name {
+    font-size: 12px; font-weight: 700;
+    text-align: center; line-height: 1.2;
+    max-width: 100%; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
+  }
+  .seat-label { font-size: 10px; color: var(--text2); }
+  .seat-badge {
+    font-size: 9px; padding: 0 4px; border-radius: 4px;
+    background: rgba(99,102,241,.2); color: var(--accent2);
+    margin-top: 1px; white-space: nowrap;
+  }
+  .back-door {
+    font-size: 12px; color: var(--text2);
+    background: var(--card2); border-radius: 8px;
+    padding: 6px 40px; text-align: center;
+  }
+  /* 滚动条 */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  /* 上传区域 */
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .upload-zone:hover { border-color: var(--accent); background: rgba(99,102,241,.05); }
+  /* 动画 */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .fade-in { animation: fadeIn .4s ease; }
+  /* 响应式 */
+  @media (max-width: 768px) {
+    .cinema-seat { width: 40px; height: 40px; font-size: 9px; }
+    .seat-name { font-size: 9px; }
+    .seat-num { font-size: 7px; top: 1px; left: 3px; }
+    .desk-group { padding: 2px 1px; gap: 2px; }
+    .row-seats { gap: 3px; }
+    .row-label { font-size: 9px; min-width: 24px; }
+    .row-label.right { display: none; }
+    .cinema-row { gap: 3px; margin-bottom: 2px; }
+    .seat-badge { font-size: 7px; padding: 0 2px; }
+  }
+  @media (max-width: 480px) {
+    .cinema-seat { width: 32px; height: 32px; }
+    .seat-name { font-size: 8px; }
+    .seat-num { font-size: 6px; }
+    .row-label { font-size: 8px; min-width: 20px; }
+    .desk-group { padding: 2px 1px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== 口令验证层 ==================== -->
+<div id="authOverlay" class="fixed inset-0 z-50 flex items-center justify-center" style="background:var(--bg)">
+  <div class="w-full max-w-md mx-4 fade-in">
+
+    <!-- 品牌区 -->
+    <div class="text-center mb-6">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4" style="background:linear-gradient(135deg, var(--accent), #a855f7)">
+        <span class="text-3xl">🏫</span>
+      </div>
+      <h1 class="text-2xl font-bold text-white mb-2">班级座位编排系统</h1>
+      <p class="text-sm leading-relaxed" style="color:var(--text2)">
+        智能排座 · 五维算法 · 一键生成<br>支持身高、视力、活跃度、性别、成绩综合编排
+      </p>
+    </div>
+
+    <!-- 口令输入 -->
+    <div class="card p-6">
+      <p class="text-xs font-semibold mb-3 text-center" style="color:var(--accent2)">🔐 访问口令</p>
+      <input type="password" id="authPassword" class="input-field mb-3 text-center text-lg tracking-widest" placeholder="输入口令" maxlength="20" autofocus>
+      <p id="authError" class="text-red-400 text-xs text-center mb-3 hidden">口令错误，请重试</p>
+      <button onclick="verifyPassword()" class="btn-primary w-full py-3 text-base">进入系统</button>
+      <p class="text-xs text-center mt-3" style="color:var(--text2)">请联系管理员获取访问口令</p>
+    </div>
+
+    <!-- 二维码分享 -->
+    <div class="card p-5 mt-4" id="qrCard">
+      <p class="text-xs font-semibold mb-3 text-center" style="color:var(--text2)">📱 手机扫码打开</p>
+      <div class="flex justify-center mb-3">
+        <div id="qrcode" class="bg-white p-2 rounded-lg inline-block"></div>
+      </div>
+      <button onclick="copyLink()" class="btn-secondary w-full text-xs">📋 复制链接分享</button>
+      <p id="copyMsg" class="text-xs text-green-400 text-center mt-2 hidden">链接已复制！</p>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== 主应用 ==================== -->
+<div id="app" class="hidden max-w-6xl mx-auto px-3 py-4 md:px-4 md:py-6">
+
+  <!-- 头部 -->
+  <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
+    <div>
+      <h1 class="text-xl font-bold text-white">🏫 班级座位编排系统</h1>
+      <p class="text-xs" style="color:var(--text2)" id="appSubtitle">三步完成智能排座</p>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="goToStep1()" class="btn-secondary text-sm">🔄 回到第一步</button>
+    </div>
+  </div>
+
+  <!-- 步骤指示器 -->
+  <div class="flex items-center mb-8 px-4">
+    <div class="step-dot active" id="stepDot1">1</div>
+    <div class="step-line" id="stepLine1"></div>
+    <div class="step-dot todo" id="stepDot2">2</div>
+    <div class="step-line" id="stepLine2"></div>
+    <div class="step-dot todo" id="stepDot3">3</div>
+  </div>
+
+  <!-- ==================== 第一页：布局设置 + 排座原则 ==================== -->
+  <div id="page1" class="fade-in space-y-6">
+
+    <!-- 布局设置 -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold text-white mb-1">一、设置座位布局</h2>
+      <p class="text-xs mb-4" style="color:var(--text2)">设置教室的排数和每排座位分组方式</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="text-sm font-medium block mb-1">排数（行数）</label>
+          <input type="number" id="totalRows" class="input-field" value="6" min="1" max="20" onchange="updateRowConfigs()">
+        </div>
+        <div>
+          <label class="text-sm font-medium block mb-1">每组默认人数</label>
+          <select id="defaultGroupSize" class="input-field" onchange="updateRowConfigs()">
+            <option value="1">1 人/组（单人桌）</option>
+            <option value="2" selected>2 人/组（双人桌）</option>
+            <option value="3">3 人/组（三人桌）</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button onclick="applyDefaultToAll()" class="btn-secondary w-full">应用默认布局到所有排</button>
+        </div>
+      </div>
+
+      <!-- 每排详细设置 -->
+      <div id="rowConfigsContainer" class="space-y-3 max-h-80 overflow-y-auto pr-2"></div>
+
+      <div class="mt-4 p-3 rounded-lg" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2)">
+        <p class="text-xs" style="color:var(--accent2)">
+          💡 提示：分组格式如 "2,2,2,2" 表示该排有 4 组，每组 2 人（共 8 个座位）。不修改则默认全部为两人一组。
+        </p>
+      </div>
+    </div>
+
+    <!-- 排座原则 -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold text-white mb-1">二、设置座位安排原则</h2>
+      <p class="text-xs mb-4" style="color:var(--text2)">勾选需要遵循的原则，冲突时按优先级处理</p>
+
+      <div class="space-y-3">
+        <!-- 身高 -->
+        <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all hover:bg-opacity-50" style="background:var(--card2)">
+          <input type="checkbox" id="prnHeight" class="mt-0.5 w-5 h-5 accent-indigo-500" onchange="onPrincipleChange()">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-white">按身高排列</span>
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--accent);color:#fff">优先级 1</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text2)">身高范围 0-250cm，个子矮坐前面，个子高坐后面</p>
+          </div>
+        </label>
+
+        <!-- 视力 -->
+        <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all hover:bg-opacity-50" style="background:var(--card2)">
+          <input type="checkbox" id="prnVision" class="mt-0.5 w-5 h-5 accent-indigo-500" onchange="onPrincipleChange()">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-white">按视力排列</span>
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background:#4f46e5;color:#fff">优先级 2</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text2)">视力范围 0-5.3，视力差的坐前面</p>
+          </div>
+        </label>
+
+        <!-- 爱讲话爱搞小动作 -->
+        <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all hover:bg-opacity-50" style="background:var(--card2)">
+          <input type="checkbox" id="prnTalkative" class="mt-0.5 w-5 h-5 accent-indigo-500" onchange="onPrincipleChange()">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-white">爱讲话/爱搞小动作分散</span>
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background:#4338ca;color:#fff">优先级 3</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text2)">评分范围 0-10（0=乖，10=极度活跃），高分者分散就坐</p>
+          </div>
+        </label>
+
+        <!-- 男女生交错 -->
+        <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all hover:bg-opacity-50" style="background:var(--card2)">
+          <input type="checkbox" id="prnGender" class="mt-0.5 w-5 h-5 accent-indigo-500" onchange="onPrincipleChange()">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-white">男女生交错</span>
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background:#3730a3;color:#fff">优先级 4</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text2)">尽量男女相邻而坐</p>
+          </div>
+        </label>
+
+        <!-- 成绩互补 -->
+        <label class="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all hover:bg-opacity-50" style="background:var(--card2)">
+          <input type="checkbox" id="prnAcademic" class="mt-0.5 w-5 h-5 accent-indigo-500" onchange="onPrincipleChange()">
+          <div class="flex-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-white">成绩互补</span>
+              <span class="text-xs px-2 py-0.5 rounded-full" style="background:#312e81;color:#fff">优先级 5</span>
+            </div>
+            <p class="text-xs mt-1" style="color:var(--text2)">成绩范围 0-100 分，好生带差生（同组搭配）</p>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- 下一步按钮 -->
+    <div class="flex justify-end">
+      <button onclick="goToStep2()" class="btn-primary text-lg px-8 py-3">下一步 → 上传学生数据</button>
+    </div>
+  </div>
+
+  <!-- ==================== 第二页：上传Excel ==================== -->
+  <div id="page2" class="hidden fade-in space-y-6">
+    <!-- 统一上传 -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold text-white mb-1">上传学生数据</h2>
+      <p class="text-xs mb-3" style="color:var(--text2)">
+        上传一个包含所有学生信息的 Excel 文件，系统会根据第一页勾选的排座原则自动使用对应列的数据。
+      </p>
+
+      <!-- Excel 列说明 -->
+      <div class="mb-4 p-3 rounded-lg" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2)">
+        <p class="text-xs font-semibold mb-2" style="color:var(--accent2)">Excel 文件列格式要求（第一行为表头，从第二行开始为数据）：</p>
+        <table class="w-full text-xs">
+          <thead><tr style="color:var(--text2)">
+            <th class="text-left py-1 pr-2">列</th><th class="text-left py-1 pr-2">字段</th><th class="text-left py-1 pr-2">格式要求</th><th class="text-left py-1">使用条件</th>
+          </tr></thead>
+          <tbody style="color:var(--text)">
+            <tr><td class="py-1 pr-2 font-mono">A</td><td class="py-1 pr-2">姓名</td><td class="py-1 pr-2" style="color:var(--text2)">必填，文本</td><td class="py-1" style="color:var(--green)">始终使用</td></tr>
+            <tr><td class="py-1 pr-2 font-mono">B</td><td class="py-1 pr-2">性别</td><td class="py-1 pr-2" style="color:var(--text2)">男 / 女</td><td class="py-1"><span id="colUse_gender" style="color:var(--green)">✓ 已勾选</span></td></tr>
+            <tr><td class="py-1 pr-2 font-mono">C</td><td class="py-1 pr-2">身高</td><td class="py-1 pr-2" style="color:var(--text2)">数值，0~250 cm</td><td class="py-1"><span id="colUse_height" style="color:var(--green)">✓ 已勾选</span></td></tr>
+            <tr><td class="py-1 pr-2 font-mono">D</td><td class="py-1 pr-2">视力</td><td class="py-1 pr-2" style="color:var(--text2)">数值，0~5.3</td><td class="py-1"><span id="colUse_vision" style="color:var(--green)">✓ 已勾选</span></td></tr>
+            <tr><td class="py-1 pr-2 font-mono">E</td><td class="py-1 pr-2">活跃度</td><td class="py-1 pr-2" style="color:var(--text2)">数值，0~10</td><td class="py-1"><span id="colUse_talkative" style="color:var(--green)">✓ 已勾选</span></td></tr>
+            <tr><td class="py-1 pr-2 font-mono">F</td><td class="py-1 pr-2">成绩</td><td class="py-1 pr-2" style="color:var(--text2)">数值，0~100</td><td class="py-1"><span id="colUse_academic" style="color:var(--green)">✓ 已勾选</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 上传区域 -->
+      <div id="uploadAreaSingle" class="upload-zone" onclick="document.getElementById('fileSingle').click()">
+        <p class="text-sm" style="color:var(--text2)">📁 点击上传 Excel 文件（.xlsx / .xls）</p>
+        <p class="text-xs mt-1" style="color:var(--text2)">支持将文件拖拽到此处</p>
+      </div>
+      <input type="file" id="fileSingle" class="hidden" accept=".xlsx,.xls" onchange="handleFileUploadSingle(this)">
+      <p id="uploadStatus" class="text-xs mt-2 text-center" style="color:var(--text2)">尚未上传</p>
+    </div>
+
+    <!-- 手动添加学生 -->
+    <div class="card p-6">
+      <h2 class="text-lg font-bold text-white mb-4">手动添加学生</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3" id="manualInputs">
+        <input type="text" id="manualName" class="input-field" placeholder="姓名 *">
+        <select id="manualGender" class="input-field"><option value="">性别</option><option value="男">男</option><option value="女">女</option></select>
+        <input type="number" id="manualHeight" class="input-field" placeholder="身高(cm)" min="0" max="250">
+        <input type="number" id="manualVision" class="input-field" placeholder="视力" min="0" max="5.3" step="0.1">
+        <input type="number" id="manualTalkative" class="input-field" placeholder="活跃度(0-10)" min="0" max="10">
+        <input type="number" id="manualAcademic" class="input-field" placeholder="成绩(0-100)" min="0" max="100">
+      </div>
+      <button onclick="addManualStudent()" class="btn-primary">添加学生</button>
+    </div>
+
+    <!-- 学生列表 -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold text-white">当前学生列表（<span id="studentCount">0</span>人）</h2>
+        <button onclick="clearStudents()" class="btn-secondary text-sm text-red-400">清空列表</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="border-b" style="border-color:var(--border)">
+            <th class="text-left py-2 px-3">姓名</th><th class="text-left py-2 px-3">性别</th>
+            <th class="text-left py-2 px-3">身高</th><th class="text-left py-2 px-3">视力</th>
+            <th class="text-left py-2 px-3">活跃度</th><th class="text-left py-2 px-3">成绩</th>
+            <th class="text-left py-2 px-3">操作</th>
+          </tr></thead>
+          <tbody id="studentTableBody"><tr><td colspan="7" class="text-center py-8" style="color:var(--text2)">暂无学生数据，请上传 Excel 或手动添加</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="flex justify-between">
+      <button onclick="goToStep1()" class="btn-secondary">← 上一步</button>
+      <button onclick="goToStep3()" class="btn-primary text-lg px-8 py-3" id="btnToStep3">生成座位表 →</button>
+    </div>
+  </div>
+
+  <!-- ==================== 第三页：座位排序表 ==================== -->
+  <div id="page3" class="hidden fade-in space-y-6">
+
+    <!-- 操作栏 -->
+    <div class="card p-4 flex flex-wrap items-center gap-3">
+      <button onclick="goToStep2()" class="btn-secondary">← 上一步</button>
+      <button onclick="generateSeating()" class="btn-primary">🔄 重新生成</button>
+      <button onclick="randomShuffle()" class="btn-secondary">🎲 随机打乱</button>
+      <select id="highlightPrinciple" class="input-field w-auto" onchange="renderSeating()">
+        <option value="">不标记</option>
+        <option value="gender">标记男女</option>
+        <option value="height">标记身高</option>
+        <option value="vision">标记视力</option>
+        <option value="talkative">标记活跃度</option>
+        <option value="academic">标记成绩</option>
+      </select>
+      <span class="text-xs" style="color:var(--text2)">|</span>
+      <span class="text-xs" style="color:var(--text2)">提示：点击一个座位选中，再点击另一个座位即可交换</span>
+      <button onclick="exportExcel()" class="btn-secondary ml-auto">📥 导出 Excel</button>
+      <button onclick="saveAsImage()" class="btn-secondary">📸 保存图片</button>
+    </div>
+
+    <!-- 座位图 -->
+    <div class="card p-3 md:p-6 overflow-x-auto">
+      <div class="flex items-center justify-center mb-4">
+        <div class="w-3/4 h-8 rounded-lg flex items-center justify-center text-xs font-bold" style="background:var(--card2);color:var(--text2)">
+          🏫 讲 台
+        </div>
+      </div>
+      <div id="seatingGrid" class="flex flex-col gap-2 items-center"></div>
+    </div>
+
+    <!-- 统计 -->
+    <div class="card p-6" id="statsPanel" style="display:none">
+      <h3 class="text-md font-bold text-white mb-3">排座统计</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="statsGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== 脚本 ==================== -->
+<script>
+// ========== 全局状态 ==========
+const STORAGE_KEY = 'seating_arrangement_data';
+
+// 固定口令的哈希（防止明文存储在代码中）
+const CORRECT_HASH = '60ec607d';
+function passHash(s) { let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h+s.charCodeAt(i))|0;}return (h>>>0).toString(16).padStart(8,'0'); }
+
+let state = {
+  step: 1,
+  totalRows: 6,
+  rowConfigs: [],       // [{ columns, groups: [2,2,2,2] }]
+  principles: {
+    height: true,
+    vision: true,
+    talkative: true,
+    gender: true,
+    academic: true
+  },
+  students: {},         // { name: { gender, height, vision, talkative, academic } }
+  seating: null,        // 生成的座位表
+  selectedSeat: null    // 当前选中用于交换的座位
+};
+
+// ========== 初始化 ==========
+function init() {
+  // 读取数据
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+    } catch(e) {}
+  }
+  // 初始化行配置
+  if (state.rowConfigs.length === 0) {
+    initDefaultRowConfigs();
+  }
+
+  // 生成二维码
+  initQRCode();
+
+  // 回车验证口令
+  document.getElementById('authPassword').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') verifyPassword();
+  });
+}
+
+function initDefaultRowConfigs() {
+  const totalCols = 8;
+  state.rowConfigs = [];
+  for (let i = 0; i < state.totalRows; i++) {
+    const groups = [];
+    let remaining = totalCols;
+    while (remaining >= 2) { groups.push(2); remaining -= 2; }
+    if (remaining > 0) groups.push(remaining);
+    state.rowConfigs.push({ columns: totalCols, groups: groups });
+  }
+}
+
+// ========== 口令验证 ==========
+function verifyPassword() {
+  const input = document.getElementById('authPassword').value.trim();
+  const errEl = document.getElementById('authError');
+
+  if (!input) {
+    errEl.textContent = '请输入口令';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  if (passHash(input) === CORRECT_HASH) {
+    showApp();
+  } else {
+    errEl.textContent = '口令错误，请重试';
+    errEl.classList.remove('hidden');
+  }
+}
+
+function showApp() {
+  document.getElementById('authOverlay').style.display = 'none';
+  document.getElementById('app').classList.remove('hidden');
+  renderCurrentStep();
+}
+
+// ========== 分享功能 ==========
+function initQRCode() {
+  const url = window.location.href;
+  const qrEl = document.getElementById('qrcode');
+  if (qrEl && typeof QRCode !== 'undefined') {
+    new QRCode(qrEl, {
+      text: url,
+      width: 140,
+      height: 140,
+      colorDark: '#1e293b',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const el = document.getElementById('copyMsg');
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 2000);
+  }).catch(() => {
+    alert('请手动复制链接：' + window.location.href);
+  });
+}
+
+// ========== 步骤导航 ==========
+function goToStep1() { state.step = 1; renderCurrentStep(); }
+function goToStep2() { state.step = 2; renderCurrentStep(); }
+function goToStep3() {
+  const totalSeats = state.rowConfigs.reduce((sum, rc) => sum + rc.columns, 0);
+  const studentCount = Object.keys(state.students).length;
+  if (studentCount === 0) {
+    if (!confirm('当前没有学生数据，将显示空座位表。确定继续吗？\n\n可先查看座位布局，稍后返回上一步上传学生数据。')) return;
+  } else if (studentCount > totalSeats) {
+    if (!confirm(`警告：学生人数(${studentCount})超过座位总数(${totalSeats})，多余的学生将无法入座。\n\n建议返回调整座位布局后再生成。是否强制继续？`)) return;
+  }
+  state.step = 3;
+  // 先生成座位（会设置 state.seating 并渲染），再切换页面
+  generateSeating();
+  renderCurrentStep();
+}
+
+function renderCurrentStep() {
+  const pages = ['page1','page2','page3'];
+  pages.forEach((p,i) => {
+    document.getElementById(p).classList.toggle('hidden', i + 1 !== state.step);
+  });
+
+  // 更新步骤指示器
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('stepDot' + i);
+    dot.classList.remove('active','done','todo');
+    if (i < state.step) dot.classList.add('done');
+    else if (i === state.step) dot.classList.add('active');
+    else dot.classList.add('todo');
+
+    if (i < 3) {
+      const line = document.getElementById('stepLine' + i);
+      line.classList.toggle('done', i < state.step);
+    }
+  }
+
+  // 渲染当前页内容
+  if (state.step === 1) {
+    renderRowConfigs();
+    renderPrincipleCheckboxes();
+    document.getElementById('totalRows').value = state.totalRows;
+  } else if (state.step === 2) {
+    renderUploadAreas();
+    renderStudentTable();
+  } else if (state.step === 3) {
+    if (state.seating) {
+      renderSeating();
+    } else {
+      document.getElementById('seatingGrid').innerHTML = '<p class="text-center py-12" style="color:var(--text2)">请点击"生成座位表"</p>';
+      document.getElementById('statsPanel').style.display = 'none';
+    }
+  }
+
+  document.getElementById('appSubtitle').textContent =
+    ['设置座位布局与原则','上传学生数据','查看与调整座位'][state.step - 1];
+
+  saveState();
+}
+
+// ========== 第一页：布局配置 ==========
+function updateRowConfigs() {
+  state.totalRows = parseInt(document.getElementById('totalRows').value) || 6;
+  const defaultSize = parseInt(document.getElementById('defaultGroupSize').value) || 2;
+
+  // 保持现有配置或扩展
+  while (state.rowConfigs.length < state.totalRows) {
+    const last = state.rowConfigs[state.rowConfigs.length - 1];
+    state.rowConfigs.push(last ? JSON.parse(JSON.stringify(last)) : { columns: 8, groups: [2,2,2,2] });
+  }
+  state.rowConfigs.length = state.totalRows;
+  renderRowConfigs();
+  saveState();
+}
+
+function applyDefaultToAll() {
+  const defaultSize = parseInt(document.getElementById('defaultGroupSize').value) || 2;
+  // 保留各排的 columns，只改 groups
+  for (let rc of state.rowConfigs) {
+    const cols = rc.columns;
+    const groupCount = Math.floor(cols / defaultSize);
+    const remainder = cols % defaultSize;
+    rc.groups = Array(groupCount).fill(defaultSize);
+    if (remainder > 0) rc.groups.push(remainder);
+  }
+  renderRowConfigs();
+  saveState();
+}
+
+function renderRowConfigs() {
+  const container = document.getElementById('rowConfigsContainer');
+  container.innerHTML = state.rowConfigs.map((rc, i) => {
+    const totalFromGroups = rc.groups.reduce((a,b)=>a+b,0);
+    const mismatch = totalFromGroups !== rc.columns;
+    return `
+    <div class="p-3 rounded-lg" style="background:var(--card2)">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-bold text-white">第 ${i+1} 排</span>
+        <span class="text-xs" style="color:var(--green)">共 ${totalFromGroups} 座</span>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1">
+          <span class="text-xs whitespace-nowrap" style="color:var(--text2)">座位数：</span>
+          <input type="number" value="${rc.columns}" min="1" max="30"
+            class="input-field w-14 text-center text-sm"
+            onchange="updateRowColumns(${i}, this.value)">
+        </div>
+        <div class="flex items-center gap-1 flex-1 min-w-[140px]">
+          <span class="text-xs whitespace-nowrap" style="color:var(--text2)">分组：</span>
+          <input type="text" value="${rc.groups.join(',')}"
+            class="input-field flex-1 text-sm min-w-0"
+            placeholder="如 2,2,2,2"
+            onchange="updateRowGroups(${i}, this.value)">
+        </div>
+      </div>
+      ${mismatch ? `<div class="mt-2 text-xs text-red-400">⚠ 分组总和(${totalFromGroups})≠座位数(${rc.columns})</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function updateRowColumns(index, value) {
+  state.rowConfigs[index].columns = parseInt(value) || 8;
+  // 自动调整分组
+  const cols = state.rowConfigs[index].columns;
+  const defaultSize = parseInt(document.getElementById('defaultGroupSize').value) || 2;
+  const groupCount = Math.floor(cols / defaultSize);
+  const remainder = cols % defaultSize;
+  state.rowConfigs[index].groups = Array(groupCount).fill(defaultSize);
+  if (remainder > 0) state.rowConfigs[index].groups.push(remainder);
+  renderRowConfigs();
+  saveState();
+}
+
+function updateRowGroups(index, value) {
+  const parts = value.split(/[,，\s]+/).map(Number).filter(n => !isNaN(n) && n > 0);
+  if (parts.length > 0) {
+    state.rowConfigs[index].groups = parts;
+  }
+  renderRowConfigs();
+  saveState();
+}
+
+function renderPrincipleCheckboxes() {
+  document.getElementById('prnHeight').checked = state.principles.height;
+  document.getElementById('prnVision').checked = state.principles.vision;
+  document.getElementById('prnTalkative').checked = state.principles.talkative;
+  document.getElementById('prnGender').checked = state.principles.gender;
+  document.getElementById('prnAcademic').checked = state.principles.academic;
+}
+
+function onPrincipleChange() {
+  state.principles.height = document.getElementById('prnHeight').checked;
+  state.principles.vision = document.getElementById('prnVision').checked;
+  state.principles.talkative = document.getElementById('prnTalkative').checked;
+  state.principles.gender = document.getElementById('prnGender').checked;
+  state.principles.academic = document.getElementById('prnAcademic').checked;
+  saveState();
+}
+
+// ========== 第二页：上传Excel（统一文件） ==========
+function renderUploadAreas() {
+  // 更新列使用状态提示
+  const principles = ['height','vision','talkative','gender','academic'];
+  principles.forEach(key => {
+    const el = document.getElementById('colUse_' + key);
+    if (el) {
+      if (state.principles[key]) {
+        el.textContent = '✓ 已勾选';
+        el.style.color = 'var(--green)';
+      } else {
+        el.textContent = '✗ 未勾选（忽略）';
+        el.style.color = 'var(--text2)';
+      }
+    }
+  });
+}
+
+function handleFileUploadSingle(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+      let count = 0;
+      // 从第二行开始（跳过表头）
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || !row[0]) continue;
+        const name = String(row[0]).trim();
+        if (!name) continue;
+
+        if (!state.students[name]) state.students[name] = {};
+
+        // B列: 性别
+        if (row[1] != null && row[1] !== '') {
+          state.students[name].gender = String(row[1]).trim();
+        }
+        // C列: 身高
+        const h = parseFloat(row[2]);
+        if (!isNaN(h) && h >= 0 && h <= 250) state.students[name].height = h;
+        // D列: 视力
+        const v = parseFloat(row[3]);
+        if (!isNaN(v) && v >= 0 && v <= 5.3) state.students[name].vision = v;
+        // E列: 活跃度
+        const t = parseFloat(row[4]);
+        if (!isNaN(t) && t >= 0 && t <= 10) state.students[name].talkative = t;
+        // F列: 成绩
+        const a = parseFloat(row[5]);
+        if (!isNaN(a) && a >= 0 && a <= 100) state.students[name].academic = a;
+
+        count++;
+      }
+      document.getElementById('uploadStatus').textContent = `✅ 已导入 ${count} 条学生数据`;
+      document.getElementById('uploadStatus').style.color = 'var(--green)';
+      renderStudentTable();
+      saveState();
+    } catch(err) {
+      alert('Excel 解析失败：' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// 手动添加学生
+function addManualStudent() {
+  const name = document.getElementById('manualName').value.trim();
+  if (!name) { alert('请输入姓名'); return; }
+  if (!state.students[name]) state.students[name] = {};
+  const s = state.students[name];
+  const gender = document.getElementById('manualGender').value;
+  const height = document.getElementById('manualHeight').value;
+  const vision = document.getElementById('manualVision').value;
+  const talkative = document.getElementById('manualTalkative').value;
+  const academic = document.getElementById('manualAcademic').value;
+  if (gender) s.gender = gender;
+  if (height) s.height = parseFloat(height);
+  if (vision) s.vision = parseFloat(vision);
+  if (talkative) s.talkative = parseFloat(talkative);
+  if (academic) s.academic = parseFloat(academic);
+  renderStudentTable();
+  saveState();
+  // 清空输入
+  document.getElementById('manualName').value = '';
+}
+
+function renderStudentTable() {
+  const tbody = document.getElementById('studentTableBody');
+  const students = Object.entries(state.students);
+  document.getElementById('studentCount').textContent = students.length;
+
+  if (students.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8" style="color:var(--text2)">暂无学生数据，请上传 Excel 或手动添加</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = students.map(([name, s]) => `
+    <tr class="border-b" style="border-color:var(--border)">
+      <td class="py-2 px-3 font-medium text-white">${name}</td>
+      <td class="py-2 px-3">${s.gender || '-'}</td>
+      <td class="py-2 px-3">${s.height != null ? s.height + 'cm' : '-'}</td>
+      <td class="py-2 px-3">${s.vision != null ? s.vision : '-'}</td>
+      <td class="py-2 px-3">${s.talkative != null ? s.talkative : '-'}</td>
+      <td class="py-2 px-3">${s.academic != null ? s.academic : '-'}</td>
+      <td class="py-2 px-3">
+        <button onclick="removeStudent('${name}')" class="text-red-400 text-xs hover:underline">删除</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function removeStudent(name) {
+  delete state.students[name];
+  renderStudentTable();
+  saveState();
+}
+
+function clearStudents() {
+  if (confirm('确定要清空所有学生数据吗？此操作不可撤销。')) {
+    state.students = {};
+    renderStudentTable();
+    saveState();
+  }
+}
+
+// ========== 排座算法 ==========
+function getActivePrinciples() {
+  const order = [];
+  if (state.principles.height) order.push('height');
+  if (state.principles.vision) order.push('vision');
+  if (state.principles.talkative) order.push('talkative');
+  if (state.principles.gender) order.push('gender');
+  if (state.principles.academic) order.push('academic');
+  return order;
+}
+
+function sortByPrinciple(students, principle) {
+  const withVal = students.filter(s => s[principle] != null);
+  const withoutVal = students.filter(s => s[principle] == null);
+
+  switch(principle) {
+    case 'height': withVal.sort((a,b) => a.height - b.height); break;
+    case 'vision': withVal.sort((a,b) => a.vision - b.vision); break;
+    case 'talkative': withVal.sort((a,b) => a.talkative - b.talkative); break;
+    case 'gender': withVal.sort((a,b) => (a.gender||'').localeCompare(b.gender||'')); break;
+    case 'academic': withVal.sort((a,b) => a.academic - b.academic); break;
+  }
+
+  // 没有该原则数据的学生放到末尾
+  return [...withVal, ...withoutVal];
+}
+
+function generateSeating() {
+  const students = Object.entries(state.students).map(([name, data]) => ({
+    name, ...data
+  }));
+
+  // 始终构建空座位表（影院式展示所有座位）
+  state.seating = [];
+  state.rowConfigs.forEach((rc) => {
+    const row = [];
+    rc.groups.forEach((groupSize) => {
+      const group = [];
+      for (let gs = 0; gs < groupSize; gs++) {
+        group.push({ name: '', _empty: true });
+      }
+      row.push(group);
+    });
+    state.seating.push(row);
+  });
+
+  // 如果没有学生，只渲染空座位表
+  if (students.length === 0) {
+    renderSeating();
+    renderStats();
+    saveState();
+    return;
+  }
+
+  const activePrinciples = getActivePrinciples();
+
+  // 构建座位位置列表
+  const seatPositions = [];
+  let globalSeq = 0;
+  state.rowConfigs.forEach((rc, rowIndex) => {
+    let colInRow = 0;
+    rc.groups.forEach((groupSize, groupIndex) => {
+      for (let gs = 0; gs < groupSize; gs++) {
+        seatPositions.push({
+          rowIndex, groupIndex,
+          colInGroup: gs, groupTotal: groupSize,
+          globalIndex: globalSeq, colInRow: colInRow,
+          rowTotal: state.totalRows,
+        });
+        globalSeq++; colInRow++;
+      }
+    });
+  });
+
+  let arranged;
+  if (activePrinciples.length === 0) {
+    arranged = [...students].sort(() => Math.random() - 0.5);
+  } else {
+    const primaryPrinciple = activePrinciples[0];
+    const sorted = sortByPrinciple([...students], primaryPrinciple);
+
+    // Zigzag 填充顺序
+    const fillOrder = [];
+    for (let ri = 0; ri < state.totalRows; ri++) {
+      const rowSeats = seatPositions.filter(sp => sp.rowIndex === ri)
+        .sort((a, b) => a.globalIndex - b.globalIndex);
+      if (ri % 2 === 0) fillOrder.push(...rowSeats);
+      else fillOrder.push(...rowSeats.reverse());
+    }
+
+    const remaining = [...sorted];
+    const assigned = new Array(seatPositions.length).fill(null);
+
+    for (let fi = 0; fi < Math.min(fillOrder.length, sorted.length); fi++) {
+      const seat = fillOrder[fi];
+      const seatIdx = seatPositions.indexOf(seat);
+      const lookahead = Math.min(5, remaining.length);
+      let bestScore = -Infinity, bestIdx = 0;
+      for (let si = 0; si < lookahead; si++) {
+        const score = scoreStudentForSeat(remaining[si], seat, assigned, seatPositions, activePrinciples);
+        if (score > bestScore) { bestScore = score; bestIdx = si; }
+      }
+      assigned[seatIdx] = remaining.splice(bestIdx, 1)[0];
+    }
+
+    let remainingIdx = 0;
+    for (let i = 0; i < assigned.length && remainingIdx < remaining.length; i++) {
+      if (!assigned[i]) assigned[i] = remaining[remainingIdx++];
+    }
+
+    arranged = optimizeSwaps(assigned, seatPositions, activePrinciples);
+  }
+
+  // 将排列结果映射回座位结构
+  let arrangedIdx = 0;
+  state.seating = [];
+  state.rowConfigs.forEach((rc) => {
+    const row = [];
+    rc.groups.forEach((groupSize) => {
+      const group = [];
+      for (let gs = 0; gs < groupSize; gs++) {
+        group.push(arranged[arrangedIdx] || { name: '', _empty: true });
+        arrangedIdx++;
+      }
+      row.push(group);
+    });
+    state.seating.push(row);
+  });
+
+  renderSeating();
+  renderStats();
+  saveState();
+}
+
+function scoreStudentForSeat(student, seat, assigned, allSeats, activePrinciples) {
+  if (!student) return 0;
+  let score = 0;
+  const rowFraction = seat.rowIndex / Math.max(1, seat.rowTotal - 1);
+
+  // 身高（权重最高）
+  if (activePrinciples.includes('height') && student.height != null) {
+    const idealHeight = rowFraction * 200; // 后排理想身高更高
+    score += 10 * (1 - Math.abs(student.height - idealHeight) / 200);
+  }
+
+  // 视力
+  if (activePrinciples.includes('vision') && student.vision != null) {
+    const idealVision = rowFraction * 5.3; // 后排理想视力更高（视力差的坐前面）
+    score += 8 * (1 - Math.abs(student.vision - idealVision) / 5.3);
+  }
+
+  // 爱讲话：检查相邻座位是否有高分者
+  if (activePrinciples.includes('talkative') && student.talkative != null) {
+    const adjSeats = getAdjacentSeats(seat, allSeats);
+    let penalty = 0;
+    for (const adj of adjSeats) {
+      const adjStudent = assigned[adj.globalIndex];
+      if (adjStudent && adjStudent.talkative != null && adjStudent.talkative >= 7) {
+        penalty += 3;
+      }
+    }
+    // 如果该学生也很活跃，放在已活跃学生旁边扣分更多
+    if (student.talkative >= 7) penalty += student.talkative * 0.3;
+    score -= penalty;
+  }
+
+  // 性别交替
+  if (activePrinciples.includes('gender') && student.gender) {
+    const adjSeats = getAdjacentSeats(seat, allSeats);
+    let sameGenderCount = 0;
+    for (const adj of adjSeats) {
+      const adjStudent = assigned[adj.globalIndex];
+      if (adjStudent && adjStudent.gender && adjStudent.gender === student.gender) {
+        sameGenderCount++;
+      }
+    }
+    score -= sameGenderCount * 4;
+  }
+
+  // 成绩互补：同组内理想搭档是成绩差异大的
+  if (activePrinciples.includes('academic') && student.academic != null) {
+    const groupSeats = allSeats.filter(s => s.rowIndex === seat.rowIndex && s.groupIndex === seat.groupIndex);
+    for (const gs of groupSeats) {
+      if (gs === seat) continue;
+      const partner = assigned[gs.globalIndex];
+      if (partner && partner.academic != null) {
+        const diff = Math.abs(student.academic - partner.academic);
+        score += diff / 100 * 5; // 差异越大越好
+      }
+    }
+  }
+
+  // 随机扰动避免相同分数全选第一个
+  score += Math.random() * 0.1;
+
+  return score;
+}
+
+function getAdjacentSeats(seat, allSeats) {
+  // 邻座定义：同行且列索引相差≤1，或相邻行且列索引相差≤1
+  return allSeats.filter(s =>
+    s !== seat &&
+    Math.abs(s.rowIndex - seat.rowIndex) <= 1 &&
+    Math.abs(s.colInRow - seat.colInRow) <= 1
+  );
+}
+
+function optimizeSwaps(assigned, seatPositions, activePrinciples) {
+  if (activePrinciples.length === 0 || assigned.length < 2) return assigned;
+
+  const result = [...assigned];
+  const maxIterations = 500;
+
+  for (let iter = 0; iter < maxIterations; iter++) {
+    // 随机选择两个非空座位
+    const i = Math.floor(Math.random() * result.length);
+    let j = Math.floor(Math.random() * result.length);
+    if (i === j || !result[i] || !result[j]) continue;
+
+    const si = seatPositions[i];
+    const sj = seatPositions[j];
+
+    // 计算交换前的得分
+    const beforeI = scoreStudentForSeat(result[i], si, result, seatPositions, activePrinciples);
+    const beforeJ = scoreStudentForSeat(result[j], sj, result, seatPositions, activePrinciples);
+
+    // 临时交换
+    [result[i], result[j]] = [result[j], result[i]];
+
+    // 计算交换后的得分
+    const afterI = scoreStudentForSeat(result[i], si, result, seatPositions, activePrinciples);
+    const afterJ = scoreStudentForSeat(result[j], sj, result, seatPositions, activePrinciples);
+
+    if (afterI + afterJ > beforeI + beforeJ) {
+      // 保持交换
+    } else {
+      // 恢复
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+  }
+
+  // 额外：性别交替优化
+  if (activePrinciples.includes('gender')) {
+    for (let iter = 0; iter < 200; iter++) {
+      const i = Math.floor(Math.random() * result.length);
+      const j = Math.floor(Math.random() * result.length);
+      if (i === j || !result[i] || !result[j]) continue;
+      if (!result[i].gender || !result[j].gender) continue;
+      if (result[i].gender === result[j].gender) continue; // 同性别交换没意义
+
+      const si = seatPositions[i];
+      const sj = seatPositions[j];
+
+      const beforeI = countAdjacentSameGender(result[i], i, result, seatPositions);
+      const beforeJ = countAdjacentSameGender(result[j], j, result, seatPositions);
+
+      [result[i], result[j]] = [result[j], result[i]];
+
+      const afterI = countAdjacentSameGender(result[i], i, result, seatPositions);
+      const afterJ = countAdjacentSameGender(result[j], j, result, seatPositions);
+
+      if (afterI + afterJ < beforeI + beforeJ) {
+        // 保持
+      } else {
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+    }
+  }
+
+  return result;
+}
+
+function countAdjacentSameGender(student, index, assigned, allSeats) {
+  if (!student || !student.gender) return 0;
+  const seat = allSeats[index];
+  if (!seat) return 0;
+  const adjSeats = getAdjacentSeats(seat, allSeats);
+  let count = 0;
+  for (const adj of adjSeats) {
+    const adjStudent = assigned[adj.globalIndex];
+    if (adjStudent && adjStudent.gender && adjStudent.gender === student.gender) count++;
+  }
+  return count;
+}
+
+// ========== 第三页：座位图渲染（影院式） ==========
+function renderSeating() {
+  const container = document.getElementById('seatingGrid');
+  const highlight = document.getElementById('highlightPrinciple')?.value || '';
+
+  // 用来渲染的座位数据，不动 state.seating
+  let displaySeating = state.seating;
+  if (!displaySeating) {
+    // 根据 rowConfigs 临时构建空座位用于展示
+    displaySeating = [];
+    state.rowConfigs.forEach((rc) => {
+      const row = [];
+      rc.groups.forEach((groupSize) => {
+        const group = [];
+        for (let gs = 0; gs < groupSize; gs++) {
+          group.push({ name: '', _empty: true });
+        }
+        row.push(group);
+      });
+      displaySeating.push(row);
+    });
+  }
+
+  let seatNum = 1;
+
+  container.innerHTML = displaySeating.map((row, ri) => {
+    const groupsHTML = row.map((group, gi) => {
+      const seatsHTML = group.map((seat, si) => {
+        const currentNum = seatNum++;
+        const isEmpty = !seat || seat._empty;
+
+        // 学生信息高亮
+        let badgeHTML = '';
+        let bgStyle = '';
+        let genderBorder = '';
+
+        if (!isEmpty) {
+          if (highlight === 'gender') {
+            genderBorder = seat.gender === '男' ? 'border-blue-400' : seat.gender === '女' ? 'border-pink-400' : '';
+            badgeHTML = `<span class="seat-badge">${seat.gender || ''}</span>`;
+          } else if (highlight === 'height' && seat.height != null) {
+            badgeHTML = `<span class="seat-badge">${seat.height}cm</span>`;
+          } else if (highlight === 'vision' && seat.vision != null) {
+            badgeHTML = `<span class="seat-badge">视力${seat.vision.toFixed(1)}</span>`;
+          } else if (highlight === 'talkative' && seat.talkative != null) {
+            const lvl = seat.talkative >= 7 ? '活跃' : seat.talkative >= 4 ? '一般' : '安静';
+            badgeHTML = `<span class="seat-badge">${lvl}</span>`;
+          } else if (highlight === 'academic' && seat.academic != null) {
+            const rank = seat.academic >= 80 ? '优秀' : seat.academic >= 60 ? '良好' : '加油';
+            badgeHTML = `<span class="seat-badge">${rank}</span>`;
+          }
+
+          // 性别边框
+          if (seat.gender === '男') genderBorder = 'male-seat';
+          else if (seat.gender === '女') genderBorder = 'female-seat';
+        }
+
+        const isSelected = state.selectedSeat &&
+          state.selectedSeat.row === ri &&
+          state.selectedSeat.group === gi &&
+          state.selectedSeat.sub === si;
+
+        if (isEmpty) {
+          return `<div class="cinema-seat empty-seat" onclick="handleSeatClick(${ri},${gi},${si})">
+            <span class="seat-num">${currentNum}</span>
+            <span class="seat-label">空座</span>
+          </div>`;
+        } else {
+          return `<div class="cinema-seat filled-seat ${genderBorder} ${isSelected ? 'selected-seat' : ''}"
+            onclick="handleSeatClick(${ri},${gi},${si})" title="${seat.name}">
+            <span class="seat-num">${currentNum}</span>
+            <span class="seat-name">${seat.name}</span>
+            ${badgeHTML}
+          </div>`;
+        }
+      }).join('');
+
+      // 组用 desk 包裹
+      return `<div class="desk-group">${seatsHTML}</div>`;
+    }).join('<div class="aisle"></div>');
+
+    return `<div class="cinema-row">
+      <div class="row-label">第${ri+1}排</div>
+      <div class="row-seats">${groupsHTML}</div>
+      <div class="row-label right">第${ri+1}排</div>
+    </div>`;
+  }).join('');
+
+  // 底部后门标识
+  container.insertAdjacentHTML('beforeend', `
+    <div class="cinema-row" style="justify-content:center;margin-top:16px">
+      <div class="back-door">🚪 后 门</div>
+    </div>
+  `);
+}
+
+function handleSeatClick(row, group, sub) {
+  const seat = state.seating[row][group][sub];
+  const isEmpty = !seat || seat._empty;
+
+  // 点击空座位
+  if (isEmpty) {
+    if (state.selectedSeat) {
+      // 有选中学生：移动到空座
+      const prev = state.selectedSeat;
+      state.seating[row][group][sub] = state.seating[prev.row][prev.group][prev.sub];
+      state.seating[prev.row][prev.group][prev.sub] = { name: '', _empty: true };
+      state.selectedSeat = null;
+      renderStats();
+    } else {
+      // 无选中：取消选中
+      state.selectedSeat = null;
+    }
+    renderSeating();
+    saveState();
+    return;
+  }
+
+  // 点击已有学生的座位
+  if (!state.selectedSeat) {
+    state.selectedSeat = { row, group, sub };
+  } else {
+    const prev = state.selectedSeat;
+    // 交换两个学生
+    const temp = state.seating[prev.row][prev.group][prev.sub];
+    state.seating[prev.row][prev.group][prev.sub] = state.seating[row][group][sub];
+    state.seating[row][group][sub] = temp;
+    state.selectedSeat = null;
+    renderStats();
+  }
+
+  renderSeating();
+  saveState();
+}
+
+function randomShuffle() {
+  if (!state.seating) return;
+  // 收集所有非空座位
+  const allSeats = [];
+  state.seating.forEach(row => row.forEach(group => group.forEach(seat => {
+    if (seat && !seat._empty) allSeats.push(seat);
+  })));
+
+  // Fisher-Yates 洗牌
+  for (let i = allSeats.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allSeats[i], allSeats[j]] = [allSeats[j], allSeats[i]];
+  }
+
+  // 按顺序放回非空座位
+  let idx = 0;
+  for (let ri = 0; ri < state.seating.length; ri++) {
+    for (let gi = 0; gi < state.seating[ri].length; gi++) {
+      for (let si = 0; si < state.seating[ri][gi].length; si++) {
+        if (state.seating[ri][gi][si] && !state.seating[ri][gi][si]._empty && idx < allSeats.length) {
+          state.seating[ri][gi][si] = allSeats[idx++];
+        }
+      }
+    }
+  }
+
+  renderSeating();
+  renderStats();
+  saveState();
+}
+
+function renderStats() {
+  const panel = document.getElementById('statsPanel');
+  const grid = document.getElementById('statsGrid');
+  if (!state.seating) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+
+  let total = 0, male = 0, female = 0;
+  state.seating.forEach(row => row.forEach(group => group.forEach(seat => {
+    if (seat && !seat._empty) {
+      total++;
+      if (seat.gender === '男') male++;
+      if (seat.gender === '女') female++;
+    }
+  })));
+
+  const totalSeats = state.rowConfigs.reduce((s, rc) => s + rc.columns, 0);
+
+  grid.innerHTML = `
+    <div class="card2 p-3 text-center"><div class="text-2xl font-bold text-white">${total}</div><div class="text-xs" style="color:var(--text2)">已排人数</div></div>
+    <div class="card2 p-3 text-center"><div class="text-2xl font-bold text-white">${totalSeats}</div><div class="text-xs" style="color:var(--text2)">座位总数</div></div>
+    <div class="card2 p-3 text-center"><div class="text-2xl font-bold text-blue-400">${male}</div><div class="text-xs" style="color:var(--text2)">男生</div></div>
+    <div class="card2 p-3 text-center"><div class="text-2xl font-bold text-pink-400">${female}</div><div class="text-xs" style="color:var(--text2)">女生</div></div>
+    <div class="card2 p-3 text-center"><div class="text-2xl font-bold text-white">${totalSeats - total}</div><div class="text-xs" style="color:var(--text2)">空余座位</div></div>
+  `;
+}
+
+// ========== 导出Excel ==========
+function exportExcel() {
+  if (!state.seating) { alert('请先生成座位表'); return; }
+
+  const data = [['排', '组', '座位', '姓名', '性别', '身高(cm)', '视力', '活跃度', '成绩']];
+  state.seating.forEach((row, ri) => {
+    row.forEach((group, gi) => {
+      group.forEach((seat, si) => {
+        if (seat && !seat._empty) {
+          data.push([
+            ri + 1, gi + 1, si + 1,
+            seat.name,
+            seat.gender || '',
+            seat.height != null ? seat.height : '',
+            seat.vision != null ? seat.vision : '',
+            seat.talkative != null ? seat.talkative : '',
+            seat.academic != null ? seat.academic : ''
+          ]);
+        } else {
+          data.push([ri + 1, gi + 1, si + 1, '(空)', '', '', '', '', '']);
+        }
+      });
+    });
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '座位表');
+  XLSX.writeFile(wb, '座位安排表.xlsx');
+}
+
+// ========== 保存为图片 ==========
+function saveAsImage() {
+  if (!state.seating) { alert('请先生成座位表'); return; }
+  const el = document.getElementById('seatingGrid');
+  if (!el) { alert('未找到座位表元素'); return; }
+
+  // 显示加载提示
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.textContent = '生成中...';
+  btn.disabled = true;
+
+  html2canvas(el, {
+    backgroundColor: '#0b0f19',
+    scale: 2,
+    useCORS: true,
+    logging: false
+  }).then(canvas => {
+    // 下载图片
+    const link = document.createElement('a');
+    link.download = '座位安排表_' + new Date().toISOString().slice(0,10) + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.textContent = origText;
+    btn.disabled = false;
+  }).catch(err => {
+    alert('保存失败：' + err.message);
+    btn.textContent = origText;
+    btn.disabled = false;
+  });
+}
+
+// ========== 持久化 ==========
+function saveState() {
+  const toSave = {
+    step: state.step,
+    totalRows: state.totalRows,
+    rowConfigs: state.rowConfigs,
+    principles: state.principles,
+    students: state.students,
+    seating: state.seating
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+}
+
+function resetAll() {
+  if (confirm('确定要清空所有数据并退出吗？')) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+}
+
+// ========== 启动 ==========
+init();
+</script>
+</body>
+</html>
