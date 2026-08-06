@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>抖音饰品账号运营与内容策略 — 从0到1全链路作战方案</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  :root {
+    --primary: #FE2C55;
+    --secondary: #25F4EE;
+    --dark: #0F0F1A;
+    --card: #1A1A2E;
+    --accent: #FF0050;
+    --text: #E8E8F0;
+    --muted: #9090A8;
+    --border: rgba(255,255,255,0.06);
+    --success: #00D68F;
+    --warning: #FFAA00;
+    --danger: #FF3838;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--dark);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+    margin: 0;
+  }
+  .hero-gradient {
+    background: linear-gradient(135deg, #FE2C55 0%, #FF0050 30%, #8B00FF 70%, #25F4EE 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s;
+  }
+  .card:hover {
+    border-color: rgba(254,44,85,0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 40px rgba(254,44,85,0.08);
+  }
+  .gauge-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .gauge {
+    width: 160px;
+    height: 160px;
+    position: relative;
+  }
+  .gauge svg { transform: rotate(-90deg); }
+  .gauge-value {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+  }
+  .timeline-dot {
+    width: 16px; height: 16px;
+    background: var(--primary);
+    border-radius: 50%;
+    border: 3px solid var(--dark);
+    position: absolute;
+    left: -8px;
+    top: 0;
+    z-index: 2;
+  }
+  .timeline-line {
+    position: absolute;
+    left: 0; top: 16px; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--primary) 0%, rgba(254,44,85,0.1) 100%);
+    z-index: 1;
+  }
+  .stat-num {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #FE2C55, #FF0050);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(254,44,85,0.1);
+    color: var(--primary);
+    border: 1px solid rgba(254,44,85,0.2);
+  }
+  .tag-green {
+    background: rgba(0,214,143,0.1);
+    color: var(--success);
+    border-color: rgba(0,214,143,0.2);
+  }
+  .tag-yellow {
+    background: rgba(255,170,0,0.1);
+    color: var(--warning);
+    border-color: rgba(255,170,0,0.2);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  th, td {
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .step-num {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FE2C55, #8B00FF);
+    color: white;
+    font-weight: 800;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+  }
+  .highlight-box {
+    background: linear-gradient(135deg, rgba(254,44,85,0.08), rgba(139,0,255,0.08));
+    border: 1px solid rgba(254,44,85,0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  @media (max-width: 768px) {
+    .card { padding: 1.25rem; }
+    .stat-num { font-size: 1.8rem; }
+    .gauge { width: 120px; height: 120px; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- HERO -->
+<header class="relative px-6 py-20 max-w-6xl mx-auto text-center">
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(254,44,85,0.15),transparent_60%)]"></div>
+  <div class="relative z-10">
+    <div class="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full border border-white/10 bg-white/5">
+      <span class="w-2 h-2 rounded-full bg-[#25F4EE] animate-pulse"></span>
+      <span class="text-sm text-muted">抖音运营战略方案 · 2026</span>
+    </div>
+    <h1 class="text-5xl md:text-6xl font-black mb-6">
+      <span class="hero-gradient">饰品抖音账号</span><br/>
+      <span class="text-white">从0到1全链路作战方案</span>
+    </h1>
+    <p class="text-xl text-muted max-w-2xl mx-auto mb-8">
+      品类：服饰配饰 / 饰品 &nbsp;|&nbsp; 内容模式：AI生成 + 纯产品展示 &nbsp;|&nbsp; 起步状态：完全从0搭建
+    </p>
+    <div class="flex flex-wrap justify-center gap-3">
+      <span class="tag">AI内容矩阵</span>
+      <span class="tag">抖店运营</span>
+      <span class="tag">流量增长</span>
+      <span class="tag tag-green">轻资产模式</span>
+      <span class="tag tag-yellow">0真人出镜</span>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-6 pb-20 space-y-8">
+
+<!-- ======== 一、核心数据仪表盘 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">一、核心目标 & 数据仪表盘</h2>
+  <div class="card">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      <div>
+        <div class="stat-num">30<span class="text-lg">天</span></div>
+        <p class="text-sm text-muted mt-1">冷启动期</p>
+        <p class="text-xs text-muted/60">完成账号搭建+抖店开通</p>
+      </div>
+      <div>
+        <div class="stat-num">90<span class="text-lg">天</span></div>
+        <p class="text-sm text-muted mt-1">增长爆发期</p>
+        <p class="text-xs text-muted/60">稳定出单，单日GMV破千</p>
+      </div>
+      <div>
+        <div class="stat-num">5K+</div>
+        <p class="text-sm text-muted mt-1">粉丝目标</p>
+        <p class="text-xs text-muted/60">前90天粉丝积累</p>
+      </div>
+      <div>
+        <div class="stat-num">35<span class="text-lg">%+</span></div>
+        <p class="text-sm text-muted mt-1">完播率目标</p>
+        <p class="text-xs text-muted/60">视频核心指标底线</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 四个核心指标环形图 -->
+  <div class="gauge-container mt-6">
+    <div class="card text-center" style="flex:1; min-width:220px;">
+      <svg viewBox="0 0 120 120" width="120" height="120" class="mx-auto mb-3">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g1)" stroke-width="8"
+                stroke-dasharray="314" stroke-dashoffset="94" stroke-linecap="round"/>
+        <defs><linearGradient id="g1"><stop offset="0%" stop-color="#FE2C55"/><stop offset="100%" stop-color="#FF0050"/></linearGradient></defs>
+      </svg>
+      <div class="text-2xl font-black">70<span class="text-sm font-normal text-muted">%</span></div>
+      <p class="text-xs text-muted mt-1">算法权重占比</p>
+      <p class="text-xs font-semibold text-[#FE2C55]">完播率 = 王道</p>
+    </div>
+    <div class="card text-center" style="flex:1; min-width:220px;">
+      <svg viewBox="0 0 120 120" width="120" height="120" class="mx-auto mb-3">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g2)" stroke-width="8"
+                stroke-dasharray="314" stroke-dashoffset="157" stroke-linecap="round"/>
+        <defs><linearGradient id="g2"><stop offset="0%" stop-color="#8B00FF"/><stop offset="100%" stop-color="#25F4EE"/></linearGradient></defs>
+      </svg>
+      <div class="text-2xl font-black">50<span class="text-sm font-normal text-muted">%</span></div>
+      <p class="text-xs text-muted mt-1">流量来源占比</p>
+      <p class="text-xs font-semibold text-[#8B00FF]">推荐Feed = 核心</p>
+    </div>
+    <div class="card text-center" style="flex:1; min-width:220px;">
+      <svg viewBox="0 0 120 120" width="120" height="120" class="mx-auto mb-3">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g3)" stroke-width="8"
+                stroke-dasharray="314" stroke-dashoffset="220" stroke-linecap="round"/>
+        <defs><linearGradient id="g3"><stop offset="0%" stop-color="#00D68F"/><stop offset="100%" stop-color="#25F4EE"/></linearGradient></defs>
+      </svg>
+      <div class="text-2xl font-black">30<span class="text-sm font-normal text-muted">%</span></div>
+      <p class="text-xs text-muted mt-1">付费流量占比</p>
+      <p class="text-xs font-semibold text-[#00D68F]">千川+随心推</p>
+    </div>
+    <div class="card text-center" style="flex:1; min-width:220px;">
+      <svg viewBox="0 0 120 120" width="120" height="120" class="mx-auto mb-3">
+        <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+        <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g4)" stroke-width="8"
+                stroke-dasharray="314" stroke-dashoffset="188" stroke-linecap="round"/>
+        <defs><linearGradient id="g4"><stop offset="0%" stop-color="#FFAA00"/><stop offset="100%" stop-color="#FF3838"/></linearGradient></defs>
+      </svg>
+      <div class="text-2xl font-black">40<span class="text-sm font-normal text-muted">%+</span></div>
+      <p class="text-xs text-muted mt-1">目标转化率</p>
+      <p class="text-xs font-semibold text-[#FFAA00]">视频→商品点击</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 二、账号搭建 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">二、账号基础搭建（第1-3天）</h2>
+
+  <div class="card">
+    <h3 class="text-lg font-semibold mb-4">2.1 账号定位公式</h3>
+    <div class="highlight-box">
+      <p class="text-lg font-semibold mb-2">你的定位一句话：</p>
+      <p class="text-xl font-bold text-[#FE2C55]">「AI视觉美学 x 高质感饰品，不露脸也能种草」</p>
+      <p class="text-sm text-muted mt-2">区别于99%的饰品号手拿产品粗糙展示，你的差异化是AI生成的电影级光影与极致细节。</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4 mt-6">
+      <div class="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+        <div class="step-num text-xs mb-3">01</div>
+        <h4 class="font-semibold text-sm mb-1">账号命名</h4>
+        <p class="text-xs text-muted">格式：品类词 + 风格词 + 后缀<br/>例：「轻奢饰界」、「指尖流光」、「饰觉盛宴」</p>
+      </div>
+      <div class="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+        <div class="step-num text-xs mb-3">02</div>
+        <h4 class="font-semibold text-sm mb-1">头像 & 背景</h4>
+        <p class="text-xs text-muted">头像：AI生成精美饰品图<br/>背景：品牌调性图，预留直播间预告位</p>
+      </div>
+      <div class="p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+        <div class="step-num text-xs mb-3">03</div>
+        <h4 class="font-semibold text-sm mb-1">简介黄金三行</h4>
+        <p class="text-xs text-muted">①一句话品类定位<br/>②差异化卖点（AI视觉/原创设计）<br/>③引导行动（关注+小黄车选购）</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3 class="text-lg font-semibold mb-4">2.2 账号类型选择</h3>
+    <table>
+      <thead>
+        <tr><th class="w-1/5">账号选择</th><th class="w-2/5">说明</th><th class="w-2/5">建议</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tag">企业号（蓝V）</span></td>
+          <td class="text-sm">需营业执照，享官方背书+营销工具+数据分析</td>
+          <td class="text-sm text-[#00D68F]">✅ 主账号必选 — 抖店强制要求</td>
+        </tr>
+        <tr>
+          <td><span class="tag">个人号</span></td>
+          <td class="text-sm">无需资质，门槛低，适合测试内容</td>
+          <td class="text-sm text-muted">可做矩阵号，铺量引流到主号</td>
+        </tr>
+        <tr>
+          <td><span class="tag">员工号矩阵</span></td>
+          <td class="text-sm">多个号同时发布AI视频，覆盖更多人</td>
+          <td class="text-sm text-[#FFAA00]">⚠️ 后期扩展，初期聚焦一个号</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======== 三、抖店开通 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">三、抖店开通 & 选品策略（第1-7天）</h2>
+
+  <div class="card">
+    <h3 class="text-lg font-semibold mb-4">3.1 开店清单</h3>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="p-4 rounded-xl bg-white/[0.02]">
+        <h4 class="font-semibold text-sm mb-2">必须准备的资质</h4>
+        <ul class="text-sm text-muted space-y-1.5">
+          <li>• 营业执照（个体户或公司）</li>
+          <li>• 法人身份证正反面</li>
+          <li>• 银行账户信息（对公或法人个人）</li>
+          <li>• 商标注册证或品牌授权（可选但加分）</li>
+          <li>• 饰品无需特殊行业资质，门槛低</li>
+        </ul>
+      </div>
+      <div class="p-4 rounded-xl bg-white/[0.02]">
+        <h4 class="font-semibold text-sm mb-2">保证金与费率</h4>
+        <ul class="text-sm text-muted space-y-1.5">
+          <li>• 服饰配饰类目保证金：2,000-5,000元</li>
+          <li>• 技术服务费：约2%-5%（按品类）</li>
+          <li>• 货款结算：确认收货后T+7</li>
+          <li>• 新手期：前100单享平台流量扶持</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3 class="text-lg font-semibold mb-4">3.2 饰品选品策略 — AI视频适配原则</h3>
+    <div class="highlight-box">
+      <p class="text-sm font-semibold mb-1">核心选品逻辑：不是所有饰品都适合AI视频展示。选对品 = 成功一半。</p>
+    </div>
+    <table>
+      <thead>
+        <tr><th>维度</th><th>适合AI视频的品</th><th>不适合的品</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-semibold text-sm">材质反射</td>
+          <td class="text-sm text-[#00D68F]">金属光泽（银饰、钛钢）、宝石折射、珍珠光泽</td>
+          <td class="text-sm text-muted">哑光材质、布艺饰品（AI光影表现弱）</td>
+        </tr>
+        <tr>
+          <td class="font-semibold text-sm">结构复杂度</td>
+          <td class="text-sm text-[#00D68F]">多层次、镂空、立体造型（AI旋转展示震撼）</td>
+          <td class="text-sm text-muted">极简单链（展示效果单薄，完播率低）</td>
+        </tr>
+        <tr>
+          <td class="font-semibold text-sm">颜色反差</td>
+          <td class="text-sm text-[#00D68F]">高饱和、渐变、撞色（AI色彩表现力强）</td>
+          <td class="text-sm text-muted">全黑/全白极素款（AI生成易显脏）</td>
+        </tr>
+        <tr>
+          <td class="font-semibold text-sm">客单价区间</td>
+          <td class="text-sm text-[#00D68F]">19.9-99元（冲动消费最优带）</td>
+          <td class="text-sm text-muted">300元+（纯产品展示缺乏信任背书）</td>
+        </tr>
+        <tr>
+          <td class="font-semibold text-sm">SKU策略</td>
+          <td class="text-sm text-[#00D68F]">爆品3-5款 + 引流款5款 + 利润款10款</td>
+          <td class="text-sm text-muted">SKU过多、无聚焦主推品</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mt-4 p-4 rounded-xl bg-gradient-to-r from-[#FE2C55]/10 to-[#8B00FF]/10 border border-[#FE2C55]/10">
+      <p class="text-sm font-semibold mb-2">💰 前期选品不做库存！三条路径任选：</p>
+      <div class="grid md:grid-cols-3 gap-3 text-sm text-muted">
+        <div>
+          <span class="tag tag-green">路径A</span>
+          <p class="mt-1">1688一件代发 → 抖店分销，零库存风险</p>
+        </div>
+        <div>
+          <span class="tag tag-green">路径B</span>
+          <p class="mt-1">精选联盟找货 → 帮别人带货赚佣金，测试爆品</p>
+        </div>
+        <div>
+          <span class="tag tag-yellow">路径C</span>
+          <p class="mt-1">OEM自有品牌 → 后期升级，客单价翻3-5倍</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 四、AI内容矩阵（核心） ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">四、AI内容矩阵 — 这是你最大的差异化武器</h2>
+
+  <div class="card">
+    <h3 class="text-lg font-semibold mb-4">4.1 为什么AI + 饰品 = 王炸组合？</h3>
+    <div class="grid md:grid-cols-3 gap-4 text-sm">
+      <div class="p-4 rounded-xl bg-white/[0.02]">
+        <div class="text-3xl mb-2">🎬</div>
+        <h4 class="font-semibold mb-1">电影级视觉</h4>
+        <p class="text-muted">AI能生成真人无法实现的慢动作、微距、光影流动，饰品在AI画面里比实物更美</p>
+      </div>
+      <div class="p-4 rounded-xl bg-white/[0.02]">
+        <div class="text-3xl mb-2">⚡</div>
+        <h4 class="font-semibold mb-1">日产50条</h4>
+        <p class="text-muted">一套AI工作流可批量生成海量视频，日更4条轻松覆盖算法需要的发布频率</p>
+      </div>
+      <div class="p-4 rounded-xl bg-white/[0.02]">
+        <div class="text-3xl mb-2">🎯</div>
+        <h4 class="font-semibold mb-1">算法友好</h4>
+        <p class="text-muted">高质量画面+快节奏剪辑=高完播率，高完播率=算法疯狂推流</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 内容矩阵结构 -->
+  <div class="card mt-4">
+    <h3 class="text-lg font-semibold mb-4">4.2 内容矩阵：4大视频类型 × 发布节奏</h3>
+    <table>
+      <thead>
+        <tr><th>视频类型</th><th>时长</th><th>占比</th><th>内容形式</th><th>核心作用</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="font-semibold text-sm"><span class="tag">爆品展示型</span></td>
+          <td class="text-sm">7-15s</td>
+          <td class="text-sm">50%</td>
+          <td class="text-sm">AI渲染饰品360°旋转、微距特写、光影流动，搭配抖音热榜BGM</td>
+          <td class="text-sm text-[#00D68F]">主攻完播率，上推荐</td>
+        </tr>
+        <tr>
+          <td class="font-semibold text-sm"><span class="tag">反差对比型</span></td>
+          <td class="text-sm">10-20s</td>
+          <td class="text-sm">20%</td>
+          <td class="text-sm">AI生成「戴前 vs 戴后」效果对比；不同肤色/穿搭搭配效果</td>
+          <td class="text-sm text-[#FE2C55]">激发购买欲，促转化</td>
+        </tr>
+        <tr>
+          <td class="font-semibold text-sm"><span class="tag">合集种草型</span></td>
+          <td class="text-sm">15-30s</td>
+          <td class="text-sm">20%</td>
+          <td class="text-sm">「一周穿搭不重样」、「5款必入夏日耳饰」快速切换合集</td>
+          <td class="text-sm text-[#8B00FF]">拉收藏+关注转化</td>
+        </tr>
+        <tr>
+          <td class="font-semibold text-sm"><span class="tag">教程/知识型</span></td>
+          <td class="text-sm">20-40s</td>
+          <td class="text-sm">10%</td>
+          <td class="text-sm">AI语音解说：穿搭技巧、脸型配饰法则、材质科普</td>
+          <td class="text-sm text-[#FFAA00]">塑造专业人设，建信任</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="mt-4 p-4 rounded-xl bg-gradient-to-r from-[#FE2C55]/5 to-transparent border border-[#FE2C55]/10">
+      <p class="text-sm font-semibold">📅 发布节奏：每天3条（早8点 / 午12点 / 晚8点），每周21条</p>
+      <p class="text-xs text-muted mt-1">三天打鱼两天晒网 = 算法遗忘 → 算法喜欢「稳定高频输出」的账号</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======== AI视频黄金钩子 + 脚本模板 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">五、AI视频黄金钩子 & 脚本模板</h2>
+
+  <div class="card">
+    <h3 class="text-lg font-semibold mb-4">5.1 爆品展示型脚本模板（AI视频核心模型）</h3>
+    <div class="highlight-box">
+      <p class="text-xs text-muted mb-2">7-15秒爆品展示视频结构</p>
+      <div class="space-y-3 font-mono text-sm">
+        <div class="flex gap-3 items-start">
+          <div class="step-num text-xs flex-shrink-0" style="width:28px;height:28px;">0</div>
+          <div>
+            <p class="font-semibold">秒 0-1.5：视觉钩子（无声炸弹）</p>
+            <p class="text-muted text-xs">AI画面：饰品从暗处弹出，极近微距 + 光影炸裂。字幕：「看到它的第一眼，我知道钱包保不住了」</p>
+          </div>
+        </div>
+        <div class="flex gap-3 items-start">
+          <div class="step-num text-xs flex-shrink-0" style="width:28px;height:28px;">1</div>
+          <div>
+            <p class="font-semibold">秒 1.5-5：慢动作细节展示</p>
+            <p class="text-muted text-xs">AI渲染饰品360°慢速旋转，光线流转在金属表面。字幕逐一弹出：材质/工艺/镶嵌信息</p>
+          </div>
+        </div>
+        <div class="flex gap-3 items-start">
+          <div class="step-num text-xs flex-shrink-0" style="width:28px;height:28px;">2</div>
+          <div>
+            <p class="font-semibold">秒 5-8：上耳/上手效果（AI模特展示）</p>
+            <p class="text-muted text-xs">AI生成模特佩戴效果，不同角度展示。字幕：「戴上它，路人回头率直接拉满」</p>
+          </div>
+        </div>
+        <div class="flex gap-3 items-start">
+          <div class="step-num text-xs flex-shrink-0" style="width:28px;height:28px;">3</div>
+          <div>
+            <p class="font-semibold">秒 8-12：场景化展示</p>
+            <p class="text-muted text-xs">晚宴/约会/通勤不同场景切换。字幕叠加价格信息：「今日秒杀 ¥39.9」</p>
+          </div>
+        </div>
+        <div class="flex gap-3 items-start">
+          <div class="step-num text-xs flex-shrink-0" style="width:28px;height:28px;">4</div>
+          <div>
+            <p class="font-semibold">秒 12-15：引导 + 悬念结尾</p>
+            <p class="text-muted text-xs">画面渐暗聚焦到商品。字幕：「左下角小黄车，手慢无」→ 结尾留白0.5秒卡点黑屏</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="text-xs text-muted mt-3">
+      <p>🎵 BGM选择：抖音热榜前20 + 卡点剪辑，音效与镜头切换严格对齐</p>
+      <p>🖊 字幕要求：白字+黑描边，字号适中，每屏不超过8字（手机小屏阅读友好）</p>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3 class="text-lg font-semibold mb-4">5.2 四种黄金3秒钩子（轮换使用，防疲劳）</h3>
+    <div class="grid md:grid-cols-2 gap-3 text-sm">
+      <div class="p-3 rounded-xl bg-[#FE2C55]/5 border border-[#FE2C55]/10">
+        <span class="tag text-xs mb-2">A. 冲突型</span>
+        <p class="mt-1">「千万别买廉价耳环，除非你不在乎耳洞发炎」→ 引入品质对比</p>
+      </div>
+      <div class="p-3 rounded-xl bg-[#8B00FF]/5 border border-[#8B00FF]/10">
+        <span class="tag text-xs mb-2">B. 价值型</span>
+        <p class="mt-1">「花了3万块总结出的饰品搭配法则，今天免费教给你」</p>
+      </div>
+      <div class="p-3 rounded-xl bg-[#00D68F]/5 border border-[#00D68F]/10">
+        <span class="tag tag-green text-xs mb-2">C. 悬念型</span>
+        <p class="mt-1">「我发现了饰品行业一个99%的人都不知道的秘密」</p>
+      </div>
+      <div class="p-3 rounded-xl bg-[#FFAA00]/5 border border-[#FFAA00]/10">
+        <span class="tag tag-yellow text-xs mb-2">D. 共鸣型</span>
+        <p class="mt-1">「有没有人和我一样，每次买耳环永远丢一只？」</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 六、AI视频生产工具链 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">六、AI视频生产工具链 & 工作流</h2>
+
+  <div class="card">
+    <h3 class="text-lg font-semibold mb-4">6.1 从产品图到成片的全自动流水线</h3>
+    <div class="flex flex-wrap items-center gap-2 md:gap-4 text-sm py-4">
+      <div class="flex flex-col items-center text-center p-3 rounded-xl bg-white/[0.02] min-w-[100px]">
+        <div class="step-num text-xs mb-2">01</div>
+        <p class="font-semibold text-xs">产品原图</p>
+        <p class="text-[10px] text-muted">白底拍摄/供应商图</p>
+      </div>
+      <span class="text-[#FE2C55] text-xl">→</span>
+      <div class="flex flex-col items-center text-center p-3 rounded-xl bg-white/[0.02] min-w-[100px]">
+        <div class="step-num text-xs mb-2">02</div>
+        <p class="font-semibold text-xs">AI场景生成</p>
+        <p class="text-[10px] text-muted">Midjourney/可灵/即梦</p>
+      </div>
+      <span class="text-[#FE2C55] text-xl">→</span>
+      <div class="flex flex-col items-center text-center p-3 rounded-xl bg-white/[0.02] min-w-[100px]">
+        <div class="step-num text-xs mb-2">03</div>
+        <p class="font-semibold text-xs">AI视频渲染</p>
+        <p class="text-[10px] text-muted">Runway/Pika/Sora</p>
+      </div>
+      <span class="text-[#FE2C55] text-xl">→</span>
+      <div class="flex flex-col items-center text-center p-3 rounded-xl bg-white/[0.02] min-w-[100px]">
+        <div class="step-num text-xs mb-2">04</div>
+        <p class="font-semibold text-xs">批量剪辑</p>
+        <p class="text-[10px] text-muted">剪映/批量处理</p>
+      </div>
+      <span class="text-[#FE2C55] text-xl">→</span>
+      <div class="flex flex-col items-center text-center p-3 rounded-xl bg-white/[0.02] min-w-[100px]">
+        <div class="step-num text-xs mb-2">05</div>
+        <p class="font-semibold text-xs">定时发布</p>
+        <p class="text-[10px] text-muted">抖音创作者后台</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3 class="text-lg font-semibold mb-4">6.2 推荐的AI工具清单</h3>
+    <table>
+      <thead>
+        <tr><th>环节</th><th>工具</th><th>用途</th><th>费用</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-sm">图片生成场景</td>
+          <td class="text-sm font-semibold">Midjourney / 即梦AI</td>
+          <td class="text-sm">生成佩戴场景图、模特效果</td>
+          <td class="text-sm">¥60-200/月</td>
+        </tr>
+        <tr>
+          <td class="text-sm">图生视频</td>
+          <td class="text-sm font-semibold">可灵AI / Runway Gen-4</td>
+          <td class="text-sm">静态产品图 → 动态旋转、光影流转视频</td>
+          <td class="text-sm">¥60-100/月</td>
+        </tr>
+        <tr>
+          <td class="text-sm">AI模特</td>
+          <td class="text-sm font-semibold">Wondershare / HeyGen</td>
+          <td class="text-sm">生成不同肤色/脸型佩戴效果</td>
+          <td class="text-sm">¥30-100/月</td>
+        </tr>
+        <tr>
+          <td class="text-sm">配音解说</td>
+          <td class="text-sm font-semibold">剪映AI配音 / 魔音工坊</td>
+          <td class="text-sm">自然TTS解说，多种音色可选</td>
+          <td class="text-sm">免费-¥30/月</td>
+        </tr>
+        <tr>
+          <td class="text-sm">批量处理</td>
+          <td class="text-sm font-semibold">剪映专业版 + 脚本自动化</td>
+          <td class="text-sm">字幕/转场/BGM/卡点批量处理</td>
+          <td class="text-sm">免费</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="text-xs text-muted mt-3">💰 月度工具总预算：200-400元，属于极低成本的AI内容生产线</p>
+  </div>
+</section>
+
+<!-- ======== 七、流量增长引擎 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">七、流量增长引擎 — 三层漏斗模型</h2>
+
+  <div class="card">
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="text-center p-4 rounded-xl bg-[#FE2C55]/5 border border-[#FE2C55]/10">
+        <div class="text-3xl mb-2">🔍</div>
+        <h4 class="font-semibold mb-1">第一层：自然流量</h4>
+        <p class="text-3xl font-black text-[#FE2C55] mb-2">70%</p>
+        <p class="text-xs text-muted">推荐Feed + 搜索SEO + 同城流量</p>
+        <ul class="text-xs text-muted mt-2 space-y-1 text-left">
+          <li>• 每日3条高频发布养号权重</li>
+          <li>• 标题含品类关键词（耳饰/项链/手链）</li>
+          <li>• 评论区引导互动 → 提升互动率</li>
+        </ul>
+      </div>
+
+      <div class="text-center p-4 rounded-xl bg-[#8B00FF]/5 border border-[#8B00FF]/10">
+        <div class="text-3xl mb-2">🚀</div>
+        <h4 class="font-semibold mb-1">第二层：轻量投放</h4>
+        <p class="text-3xl font-black text-[#8B00FF] mb-2">20%</p>
+        <p class="text-xs text-muted">随心推 + DOU+ 精准校正</p>
+        <ul class="text-xs text-muted mt-2 space-y-1 text-left">
+          <li>• 每条潜力视频投¥100测数据</li>
+          <li>• 完播率>35%加投到¥500</li>
+          <li>• 投放时段：晚7-11点黄金档</li>
+        </ul>
+      </div>
+
+      <div class="text-center p-4 rounded-xl bg-[#00D68F]/5 border border-[#00D68F]/10">
+        <div class="text-3xl mb-2">📊</div>
+        <h4 class="font-semibold mb-1">第三层：千川放量</h4>
+        <p class="text-3xl font-black text-[#00D68F] mb-2">10%</p>
+        <p class="text-xs text-muted">巨量千川 + 直播间投放</p>
+        <ul class="text-xs text-muted mt-2 space-y-1 text-left">
+          <li>• 验证过的爆品才上量</li>
+          <li>• ROI >1.5持续放量</li>
+          <li>• 短视频引流+直播转化双链路</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOU+投放策略 -->
+  <div class="card mt-4">
+    <h3 class="text-lg font-semibold mb-4">7.1 随心推/DOU+投放SOP</h3>
+    <table>
+      <thead>
+        <tr><th>阶段</th><th>动作</th><th>预算</th><th>目标</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-sm font-semibold"><span class="tag tag-green">测试期</span></td>
+          <td class="text-sm">每条新视频投¥100，选「点赞评论」目标，女性18-35岁，一二线城市</td>
+          <td class="text-sm">¥100/条</td>
+          <td class="text-sm">找到完播率>35%的潜力视频</td>
+        </tr>
+        <tr>
+          <td class="text-sm font-semibold"><span class="tag tag-yellow">加投期</span></td>
+          <td class="text-sm">潜力视频追加到¥500，切换目标为「主页浏览+商品点击」</td>
+          <td class="text-sm">¥500/条</td>
+          <td class="text-sm">放大爆款，导流到抖店</td>
+        </tr>
+        <tr>
+          <td class="text-sm font-semibold"><span class="tag">放量期</span></td>
+          <td class="text-sm">ROI>1.5的品上巨量千川，设置「商品购买」转化目标</td>
+          <td class="text-sm">¥500-3000/天</td>
+          <td class="text-sm">规模化成交</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="mt-3 p-3 rounded-lg bg-[#FF3838]/5 border border-[#FF3838]/10">
+      <p class="text-xs text-[#FF3838] font-semibold">⚠️ 关键：DOU+不投「粉丝增长」目标 — 投粉丝来的都是羊毛党，投商品点击才有购买意图的用户</p>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 八、运营节奏 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">八、90天作战节奏</h2>
+
+  <div class="card">
+    <h3 class="text-lg font-semibold mb-6">分阶段执行计划</h3>
+
+    <!-- 第一阶段 -->
+    <div class="relative pl-8 pb-8">
+      <div class="timeline-dot"></div>
+      <div class="timeline-line"></div>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="tag text-xs">第1-7天</span>
+        <h4 class="font-semibold">第一阶段：基建搭建</h4>
+      </div>
+      <div class="grid md:grid-cols-2 gap-2 text-sm text-muted">
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">完成事项：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>✅ 账号注册 + 企业蓝V认证</li>
+            <li>✅ 抖店开店 + 类目资质审核</li>
+            <li>✅ 首批5-10个SKU上架</li>
+            <li>✅ 账号装修（头像/背景/简介/合集）</li>
+          </ul>
+        </div>
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">关键动作：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>⚡ 提前准备30条AI视频素材</li>
+            <li>⚡ 选品上架完成，主图+详情页优化</li>
+            <li>⚡ 关注10个对标饰品账号，拆解爆款</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第二阶段 -->
+    <div class="relative pl-8 pb-8">
+      <div class="timeline-dot"></div>
+      <div class="timeline-line"></div>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="tag text-xs">第8-30天</span>
+        <h4 class="font-semibold">第二阶段：内容冷启动</h4>
+      </div>
+      <div class="grid md:grid-cols-2 gap-2 text-sm text-muted">
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">目标指标：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>📊 发布60条+视频</li>
+            <li>📊 出现第一条1万播放爆款</li>
+            <li>📊 粉丝突破500</li>
+            <li>📊 抖店出第一单</li>
+          </ul>
+        </div>
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">核心打法：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>🔥 每日3条雷打不动</li>
+            <li>🔥 每条新视频¥100随心推测试</li>
+            <li>🔥 评论区维护：每条必回复+引导互动</li>
+            <li>🔥 数据复盘：每天看哪些钩子效果好</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第三阶段 -->
+    <div class="relative pl-8 pb-8">
+      <div class="timeline-dot"></div>
+      <div class="timeline-line"></div>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="tag text-xs">第31-60天</span>
+        <h4 class="font-semibold">第三阶段：流量放大</h4>
+      </div>
+      <div class="grid md:grid-cols-2 gap-2 text-sm text-muted">
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">目标指标：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>📊 粉丝突破3000</li>
+            <li>📊 单日GMV稳定¥500+</li>
+            <li>📊 出现第一条10万播放爆款</li>
+            <li>📊 确定2-3个核心爆品</li>
+          </ul>
+        </div>
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">核心打法：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>🚀 爆款视频加大投放：¥100→¥500→¥1000</li>
+            <li>🚀 提炼爆款公式，批量复制同类型视频</li>
+            <li>🚀 精选联盟开通达人带货</li>
+            <li>🚀 准备直播带货方案</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第四阶段 -->
+    <div class="relative pl-8">
+      <div class="timeline-dot"></div>
+      <div class="flex items-center gap-3 mb-3">
+        <span class="tag text-xs">第61-90天</span>
+        <h4 class="font-semibold">第四阶段：规模化复制</h4>
+      </div>
+      <div class="grid md:grid-cols-2 gap-2 text-sm text-muted">
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">目标指标：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>📊 粉丝突破5000-10000</li>
+            <li>📊 单日GMV突破¥1000-3000</li>
+            <li>📊 千川ROI稳定>1.5</li>
+            <li>📊 矩阵号启动（复制主号模型）</li>
+          </ul>
+        </div>
+        <div class="p-3 rounded-lg bg-white/[0.02]">
+          <p class="font-semibold text-xs mb-1">核心打法：</p>
+          <ul class="text-xs space-y-0.5">
+            <li>🔄 千川放量：跑通ROI模型后日预算¥500-3000</li>
+            <li>🔄 开通直播：每周2-3场，AI无人直播或真人出镜</li>
+            <li>🔄 矩阵号：2-3个子号复制主号内容+挂小黄车</li>
+            <li>🔄 OEM升级：爆品自有品牌化，客单价翻倍</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 九、数据复盘体系 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">九、数据复盘体系 — 每天必须看这5个数字</h2>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>指标</th><th>红线值</th><th>健康值</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-sm font-semibold">完播率</td>
+          <td class="text-sm text-[#FF3838]">&lt; 20%</td>
+          <td class="text-sm text-[#00D68F]">&gt; 35%</td>
+          <td class="text-sm text-muted">低于20%说明前3秒钩子失效，立即重做钩子</td>
+        </tr>
+        <tr>
+          <td class="text-sm font-semibold">互动率（点赞+评论+收藏）/播放</td>
+          <td class="text-sm text-[#FF3838]">&lt; 3%</td>
+          <td class="text-sm text-[#00D68F]">&gt; 5%</td>
+          <td class="text-sm text-muted">互动低 = 内容没共鸣，调整选题方向</td>
+        </tr>
+        <tr>
+          <td class="text-sm font-semibold">商品点击率</td>
+          <td class="text-sm text-[#FF3838]">&lt; 1%</td>
+          <td class="text-sm text-[#00D68F]">&gt; 3%</td>
+          <td class="text-sm text-muted">点了小黄车的比例，低说明产品与内容脱节</td>
+        </tr>
+        <tr>
+          <td class="text-sm font-semibold">转化率（下单/商品访问）</td>
+          <td class="text-sm text-[#FF3838]">&lt; 5%</td>
+          <td class="text-sm text-[#00D68F]">&gt; 10%</td>
+          <td class="text-sm text-muted">低说明详情页/价格/评价有问题</td>
+        </tr>
+        <tr>
+          <td class="text-sm font-semibold">千川ROI</td>
+          <td class="text-sm text-[#FF3838]">&lt; 1.0</td>
+          <td class="text-sm text-[#00D68F]">&gt; 1.5</td>
+          <td class="text-sm text-muted">ROI<1立刻停投，检查人群定向和素材</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======== 十、风控与避坑 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">十、风控与常见坑</h2>
+
+  <div class="card">
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="p-4 rounded-xl bg-[#FF3838]/5 border border-[#FF3838]/10">
+        <h4 class="font-semibold text-sm text-[#FF3838] mb-2">⚠️ 必知雷区</h4>
+        <ul class="text-xs text-muted space-y-1.5">
+          <li>❌ 视频引导去微信/淘宝 → 直接限流</li>
+          <li>❌ 夸大宣传「纯银」「保真」无检测报告 → 罚款+封店</li>
+          <li>❌ 搬运他人视频 → 判违规，账号降权</li>
+          <li>❌ AI过度使用导致画面不真实 → 虚假宣传风险</li>
+          <li>❌ 频繁修改账号信息 → 算法重新标记，流量归零</li>
+        </ul>
+      </div>
+      <div class="p-4 rounded-xl bg-[#FFAA00]/5 border border-[#FFAA00]/10">
+        <h4 class="font-semibold text-sm text-[#FFAA00] mb-2">💡 新号常见翻车</h4>
+        <ul class="text-xs text-muted space-y-1.5">
+          <li>🔸 一上来就投大量DOU+ → 打乱算法标签</li>
+          <li>🔸 只发一种类型视频 → 没有AB测试</li>
+          <li>🔸 不回复评论 → 错失算法加权</li>
+          <li>🔸 视频完播率低还硬发 → 持续伤害账号权重</li>
+          <li>🔸 选品跟着感觉走 → 不看数据不看对标</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3 class="text-lg font-semibold mb-4">AI视频特别合规提醒</h3>
+    <div class="p-4 rounded-xl bg-[#FE2C55]/5 border border-[#FE2C55]/10">
+      <ul class="text-sm text-muted space-y-2">
+        <li>✅ AI生成视频需在文案或评论区标注「AI创作」声明（平台鼓励技术应用但要求标识）</li>
+        <li>✅ AI生成的佩戴效果不能与实物严重不符，否则触发「货不对板」处罚</li>
+        <li>✅ 商品主图/详情页必须用实物图，AI效果图仅用于短视频种草展示</li>
+        <li>✅ 饰品类目注意避免使用「纯银」「真钻」等需检测报告背书的描述词</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ======== 十一、投入预算 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">十一、投入预算总览</h2>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>项目</th><th>初期投入</th><th>月度投入</th><th>说明</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="text-sm">抖店保证金</td>
+          <td class="text-sm">¥2,000-5,000</td>
+          <td class="text-sm">—</td>
+          <td class="text-sm">一次性，可退</td>
+        </tr>
+        <tr>
+          <td class="text-sm">AI工具订阅</td>
+          <td class="text-sm">¥200-400</td>
+          <td class="text-sm">¥200-400</td>
+          <td class="text-sm">Midjourney+可灵+配音</td>
+        </tr>
+        <tr>
+          <td class="text-sm">随心推测试</td>
+          <td class="text-sm">—</td>
+          <td class="text-sm">¥3,000-6,000</td>
+          <td class="text-sm">每天¥100×30天测试</td>
+        </tr>
+        <tr>
+          <td class="text-sm">千川放量（后期）</td>
+          <td class="text-sm">—</td>
+          <td class="text-sm">¥5,000-20,000</td>
+          <td class="text-sm">第2个月起，有ROI验证后</td>
+        </tr>
+        <tr>
+          <td class="text-sm">样品采购</td>
+          <td class="text-sm">¥500-1,000</td>
+          <td class="text-sm">¥300-500</td>
+          <td class="text-sm">买样拍照/AI素材源</td>
+        </tr>
+        <tr class="bg-[#FE2C55]/5">
+          <td class="text-sm font-bold">合计</td>
+          <td class="text-sm font-bold">¥2,700-6,400</td>
+          <td class="text-sm font-bold">¥3,500-6,900</td>
+          <td class="text-sm">极低成本起步，轻资产模型</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ======== 十二、执行优先级 ======== -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">十二、立刻开始 — 本周执行清单</h2>
+
+  <div class="card">
+    <div class="space-y-3">
+      <div class="flex items-center gap-3">
+        <div class="step-num text-xs flex-shrink-0">1</div>
+        <div class="text-sm">
+          <span class="tag tag-green">今天就做</span>
+          <span class="ml-2">注册抖店账号 + 准备营业执照材料</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="step-num text-xs flex-shrink-0">2</div>
+        <div class="text-sm">
+          <span class="tag tag-green">今天-明天</span>
+          <span class="ml-2">在1688/义乌购选5-10个饰品爆款，下单买样品</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="step-num text-xs flex-shrink-0">3</div>
+        <div class="text-sm">
+          <span class="tag tag-yellow">本周内</span>
+          <span class="ml-2">订阅AI工具（Midjourney + 可灵AI），学习基础操作</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="step-num text-xs flex-shrink-0">4</div>
+        <div class="text-sm">
+          <span class="tag tag-yellow">本周内</span>
+          <span class="ml-2">对标10个饰品赛道头部/腰部账号，拆解他们的爆款视频结构</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="step-num text-xs flex-shrink-0">5</div>
+        <div class="text-sm">
+          <span class="tag tag-yellow">本周内</span>
+          <span class="ml-2">生产首批10-15条AI饰品视频，存好素材库</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="step-num text-xs flex-shrink-0">6</div>
+        <div class="text-sm">
+          <span class="tag">下周</span>
+          <span class="ml-2">账号装修上线 + 抖店上架 + 开始每日3条发布</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 结尾 -->
+<footer class="card text-center">
+  <p class="text-muted text-sm">
+    本方案基于抖音运营实战经验制定，核心逻辑不变但执行细节需根据数据反馈持续迭代。<br/>
+    记住：<span class="text-[#FE2C55] font-semibold">抖音不是内容为王，是算法为王。完播率是你的北极星指标。</span>
+  </p>
+</footer>
+
+</main>
+</body>
+</html>
