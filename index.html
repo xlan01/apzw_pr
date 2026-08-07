@@ -216,23 +216,12 @@ tailwind.config = {
 
     <!-- 口令输入 -->
     <div class="card p-6">
-      <p class="text-xs font-semibold mb-3 text-center" style="color:var(--accent2)">🔐 访问口令</p>
-      <input type="password" id="authPassword" class="input-field mb-3 text-center text-lg tracking-widest" placeholder="输入口令" maxlength="20" autofocus>
+      <p class="text-xs font-semibold mb-3 text-center" style="color:var(--accent2)">🔐 激活码</p>
+      <input type="password" id="authPassword" class="input-field mb-3 text-center text-lg tracking-widest" placeholder="请输入激活码" maxlength="20" autofocus>
       <p id="authError" class="text-red-400 text-xs text-center mb-3 hidden">口令错误，请重试</p>
       <button onclick="verifyPassword()" class="btn-primary w-full py-3 text-base">进入系统</button>
-      <p class="text-xs text-center mt-3" style="color:var(--text2)">请联系管理员获取访问口令</p>
+      <p class="text-xs text-center mt-3" style="color:var(--text2)">（激活码随商品一同发送，请勿公开分享）</p>
     </div>
-
-    <!-- 二维码分享 -->
-    <div class="card p-5 mt-4" id="qrCard">
-      <p class="text-xs font-semibold mb-3 text-center" style="color:var(--text2)">📱 手机扫码打开</p>
-      <div class="flex justify-center mb-3">
-        <div id="qrcode" class="bg-white p-2 rounded-lg inline-block"></div>
-      </div>
-      <button onclick="copyLink()" class="btn-secondary w-full text-xs">📋 复制链接分享</button>
-      <p id="copyMsg" class="text-xs text-green-400 text-center mt-2 hidden">链接已复制！</p>
-    </div>
-
   </div>
 </div>
 
