@@ -2,8 +2,16 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>班级座位编排系统</title>
+
+<!-- PWA / iOS 主屏幕支持 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#6366f1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="座位编排">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 180 180%22><rect width=%22180%22 height=%22180%22 rx=%2236%22 fill=%22%236366f1%22/><text x=%2290%22 y=%22112%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2280%22 font-weight=%22bold%22 font-family=%22sans-serif%22>座</text></svg>">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -1437,6 +1445,15 @@ function resetAll() {
 
 // ========== 启动 ==========
 init();
+</script>
+
+<!-- Service Worker 注册：离线缓存 + 移动网络不稳定兜底 -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(reg => console.log('[SW] 注册成功:', reg.scope))
+    .catch(err => console.warn('[SW] 注册失败:', err));
+}
 </script>
 </body>
 </html>
